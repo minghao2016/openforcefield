@@ -17,7 +17,7 @@ import os
 import re
 import subprocess
 import textwrap
-import  tempfile
+import tempfile
 
 import pytest
 
@@ -82,7 +82,7 @@ def find_examples():
 
     example_file_paths = []
     for example_file_path in glob.glob(os.path.join(examples_dir_path, '*', '*.py')):
-        example_file_path = os.path.relpath(example_file_path)
+        example_file_path = os.path.abspath(example_file_path)
         example_file_paths.append(example_file_path)
         if not RDKIT_AVAILABLE:
             for rdkit_example in requires_rdkit:
@@ -162,8 +162,16 @@ def test_readme_links(readme_link):
     if not(success):
         raise exception
 
-@pytest.mark.parametrize('example_file_path', find_examples())
-def test_examples(example_file_path):
-    """Test that the example run without errors."""
-    run_script_file(example_file_path)
 
+@pytest.fixture(autouse=True)
+def use_tmpdir(tmpdir):
+    tmpdir.chdir()
+
+
+@pytest.mark.usefixtures("use_tmpdir")
+class TestExamples:
+
+    @pytest.mark.parametrize('example_file_path', find_examples())
+    def test_examples(self, example_file_path):
+        """Test that the example run without errors."""
+        run_script_file(example_file_path)
