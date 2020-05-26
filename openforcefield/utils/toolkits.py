@@ -474,10 +474,10 @@ class OpenEyeToolkitWrapper(ToolkitWrapper):
             The format for writing the molecule data
 
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            outfile = 'temp_molecule.' + file_format
-            self.to_file(molecule, outfile, file_format)
-            file_data = open(outfile).read()
+        suffix = '.' + file_format.lower()
+        with tempfile.NamedTemporaryFile(suffix=suffix) as tmp_file:
+            self.to_file(molecule, tmp_file.name, file_format)
+            file_data = open(tmp_file.name).read()
         file_obj.write(file_data)
 
     def to_file(self, molecule, file_path, file_format):
